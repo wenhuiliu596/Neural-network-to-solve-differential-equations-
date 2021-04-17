@@ -1,0 +1,410 @@
+#--------------------------------------------------
+# һ ׳ ΢ ַ  ̣    е     ױ߽
+#
+#  õ              ģ
+#
+# tensorflow 1.15 汾
+#--------------------------------------------------
+#import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import pandas as pd
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator, FormatStrFormatter
+plt.rcParams['font.sans-serif'] = ['SimHei'] #用来正常显示中文标签
+plt.rcParams['axes.unicode_minus'] = False #用来正常显示负号
+a=500
+p=math.pi
+gridtestnum=100
+grid1=20
+grid=grid1*grid1
+xishu_k=1
+b=0
+selfjie=10
+rstridenum=4
+cstridenum=4
+x_train = np.linspace(0,2,grid,endpoint=True)#    [0,2]    100
+x_train_2 = np.linspace(1,2,grid,endpoint=True)#x坐标
+x_train_3 = np.linspace(0,2,grid,endpoint=True)#y坐标
+x_train50_2 = np.linspace(1,2,50,endpoint=True)#测试集合x坐标
+x_train50_3 = np.linspace(0,2,50,endpoint=True)#测试集合y坐标
+
+x_train_4 = np.linspace(0.5,2,grid,endpoint=True)#    [0,2]    100
+x_train_5 = np.linspace(0.5,1,grid,endpoint=True)#    [0,2]    100
+x_train_6 = np.linspace(0.2,0.201,grid,endpoint=True)#    [0,2]    100
+x_train_7 = np.linspace(0,1,grid,endpoint=True)#    [0,2]    100
+
+
+x_tr = np.zeros((grid,2))###训练集合XY
+
+x_tr1= np.zeros((grid,2))
+x_tr2= np.zeros((grid,2))
+
+
+for i in range(len(x_train_5)):
+    x_tr[i][0]=(b//grid1)*(1/(grid1-1))-1
+    x_tr2[i][0]=x_train_6[i]-1
+    x_train_2[i]=(b//grid1)*(1/(grid1-1))-1
+    ###线性映射
+    x_tr[i][1] =b%grid1*(1/(grid1-1))-1
+    x_tr2[i][1] =x_train_7[i]-1
+    x_train_3[i]=b%grid1*(1/(grid1-1))-1
+    b = b + 1
+def feijungrid(grid2):
+    N = grid2
+    t =0.9
+    print('ef')
+    xit_train = np.linspace(0.01, 0.02, grid2, endpoint=True)  #     [0,2]    100
+    for i in range(len(xit_train)):
+        xit_train[i] = 0
+    xi_train = np.linspace(0, grid2, grid2, endpoint=True)  #     [0,2]    100
+    #wangge = xi_train / N + (t*np.sin(2*p * xi_train / N) ) / (2*p)#N子区间个数，t伸缩变换系数调剂某一个区域密集程度
+    wangge = xi_train / N + (t*np.sin(p * xi_train / N) ) / p  ##N子区间个数，t伸缩变换系数调剂某一个区域密集程度
+    return wangge
+nogrid=feijungrid(grid1)
+def testgrid(gridtest):
+    b1 = 0
+    x_trtest = np.zeros((gridtest*gridtest, 2))  ###训练集合XY
+    x_tr2test = np.zeros((gridtest*gridtest, 2))
+    x_train5test = np.linspace(0, 2, gridtest*gridtest, endpoint=True)  #     [0,2]    100
+    x_train_2test = np.linspace(1, 2, gridtest*gridtest, endpoint=True)  # x坐标
+    x_train_3test = np.linspace(0, 2, gridtest*gridtest, endpoint=True)  # y坐标
+
+    x_trtest = np.zeros((gridtest*gridtest, 2))  ###训练集合XY
+    for i in range(gridtest*gridtest):
+        x_trtest[i][0] = (b1 // gridtest) * (1 /(gridtest-1))
+        x_train_2test[i] = (b1 // gridtest) * (1 / (gridtest-1)) - 1
+
+        ###线性映射
+        x_trtest[i][1] = b1 % gridtest * (1 / (gridtest-1))
+        x_train_3test[i] = b1% gridtest * (1 / (gridtest-1)) - 1
+
+        b1 = b1 + 1
+    return x_trtest
+x_trtest=testgrid(gridtestnum)
+b=0
+for i in range(len(x_train_5)):
+    k=int(i//grid1)
+    k1=int(i%grid1)
+    '''x_tr[i][0]=nogrid[k]-1
+    x_tr2[i][0]=x_train_6[i]-1
+    x_train_2[i]=nogrid[k]-1'''
+    x_tr[i][0]=(b//grid1)*(1/(grid1-1))
+    x_tr2[i][0]=x_train_6[i]-1
+    x_train_2[i]=(b//grid1)*(1/(grid1-1))-1
+    ###线性映射
+    ###线性映射
+    x_tr[i][1] =nogrid[k1]
+    x_tr2[i][1] =x_train_7[i]-1
+    x_train_3[i]=nogrid[k1]-1
+    b=b+1
+x1_tr1 = np.zeros((len(x_tr),1))###训练集合Xx_trtest
+x2_tr2 = np.zeros((len(x_tr),1))###训练集合Y
+x1_trtest = np.zeros((len(x_trtest),1))###训练集合Xx_trtest
+x2_trtest = np.zeros((len(x_trtest),1))###训练集合Y
+
+for i in range(len(x_tr)):
+    x1_tr1[i][0]=x_tr[i][0]
+    x2_tr2[i][0]=x_tr[i][1]
+for i in range(len(x_trtest)):
+    x1_trtest[i][0]=x_trtest[i][0]
+    x2_trtest[i][0]=x_trtest[i][1]
+
+b=0
+#Z1 = (np.exp(p*Y)-np.exp(-p*Y))*np.sin(p*X)/(np.exp(p)-np.exp(-p))##真实值的函数
+y_trail =np.exp(-a*(x_train_3-1+1)**2-(x_train_2+1)**2)###线性映射
+y_trailtest =np.exp(-a*(x_trtest[:,1]-1)**2-(x_trtest[:,0])**2)###线性映射
+
+
+# y_trailtest =(np.exp(x_trtest[:,1]+1-x_trtest[:,0]-1)+2**(-1/a)*(1+x_trtest[:,1]+1)**(1+1/a))###线性映射
+
+y50_trail =np.exp(-a*(x_train50_3-1+1)**2-(x_train50_2+1)**2)###线性映射
+y_trail_2 =np.exp(-a*(x_train_7-1+1)**2-(x_train_6+1)**2)###线性映射
+##真实值的函数
+
+x_t = np.zeros((len(x_train),1))#产生100*1的矩阵
+lq1 = np.zeros((len(x_train),1))#产生100*1的矩阵
+
+lq1 =np.zeros((grid,1))#产生100*1的矩阵
+lq1andy =np.zeros((grid,1))#产生100*1的矩阵
+
+lq1_1 =np.zeros((grid,1))#产生100*1的矩阵
+lq1_2 =np.zeros((grid,1))#产生100*1的矩阵
+lq1_3 =np.zeros((grid,1))#产生100*1的矩阵
+lq1_4 =np.zeros((grid,1))#产生100*1的矩阵
+lq1_5 =np.zeros((grid,1))#产生100*1的矩阵
+lq1_6 =np.zeros((grid,1))#产生100*1的矩阵
+
+lq2 = np.zeros((grid1,1))#产生100*1的矩阵
+lq3 = np.zeros((grid1,1))#产生100*1的矩阵
+lq4 = np.zeros((grid1,1))#产生100*1的矩阵
+lq5 =np.zeros((grid1,1))#产生100*1的矩阵
+
+
+lq6 =np.zeros((grid,1))#产生100*1的矩阵
+lq7 =np.zeros((grid,1))#产生100*1的矩阵
+
+
+for i in range(len(x_train)):
+    x_t[i] = x_train[i]
+    lq7[i]=1
+
+
+            #计算损失函数
+#lq =0.2*np.exp(-0.2*x1)*np.cos(x1)#原函数的第四项
+for i in range(len(x_train)):
+    lq1_1[i]=-a*(2*np.exp(x_train_3[i]+1-x_train_2[i]-1)+2**(-1/a)*(1/a+1/(a*a))*(1+x_train_3[i]+1)**(1/a-1))
+    lq1_2[i]=(np.exp(x_train_3[i]+1-x_train_2[i]-1)+2**(-1/a)*(1+1/a)*(1+x_train_3[i]+1)**(1/a))/(1+x_train_3[i]+1)
+    #lq1[i]=lq1_2[i]+lq1_1[i]
+    lq1[i] = (1 / (1 + x_train_3[i]+1) - 2 * a) * np.exp(x_train_3[i]+1-x_train_2[i]-1)
+    lq1andy[i]=1/(1+x_train_3[i]+1)
+for i in range(len(x_train)):
+    lq1_1[i]=-2*(x_train_2[i]+1)*np.exp(-a*(x_train_3[i]-1+1)**2-(x_train_2[i]+1)**2)
+    lq1_2[i]=-2*(1-2*(x_train_2[i]+1)**2)*np.exp(-a*(x_train_3[i]-1+1)**2-(x_train_2[i]+1)**2)
+    lq1_3[i]=-2*a*(x_train_3[i]-1+1)*np.exp(-a*(x_train_3[i]-1+1)**2-(x_train_2[i]+1)**2)
+    lq1_4[i]=-2*a*(1-2*a*(x_train_3[i]-1+1)**2)*np.exp(-a*(x_train_3[i]-1+1)**2-(x_train_2[i]+1)**2)
+    lq1_5[i]=xishu_k*(x_train_2[i]+1)*(x_train_2[i]+1-1)*(1-2*(x_train_3[i]+1-0.5))
+    lq1_6[i]=xishu_k*(x_train_3[i]+1-0.5)*(x_train_3[i]+1-1-0.5)*(1-2*(x_train_2[i]+1))
+    lq1andy[i]=-(lq1_2[i]+lq1_4[i])+lq1_5[i]* lq1_1[i]+lq1_6[i]* lq1_3[i]
+##########################三层###########
+
+x1 = tf.placeholder("float", [None,1])#һ�δ���100����[100,1]
+x2 = tf.placeholder("float", [None,1])#һ�δ���100����[100,1]
+x1_1=x1-1
+x2_1=x2-1
+Wa = 50*tf.Variable(tf.random_normal([1, selfjie],mean=0.0))
+Wb = 50*tf.Variable(tf.random_normal([1, selfjie],mean=0.0))
+Wab=tf.matmul(x1_1, Wa)+tf.matmul(x2_1, Wb)
+b = tf.Variable(tf.zeros([selfjie]))
+y1 = tf.nn.sigmoid(Wab+b)#成a * b隐藏层输出100*10
+
+W1 = tf.Variable(tf.random_normal([selfjie,selfjie],mean=0.0))
+b1 = tf.Variable(tf.zeros([selfjie]))
+y2= tf.nn.sigmoid(tf.matmul(y1, W1)+b1)#成a * b隐藏层输出100*2
+
+# W2 = tf.Variable(tf.random_normal([selfjie,selfjie],mean=0.0))
+# b2 = tf.Variable(tf.zeros([selfjie]))
+# y3= tf.nn.sigmoid(tf.matmul(y2, W2)+b2)#成a * b隐藏层输出100*2
+# W3 = tf.Variable(tf.random_normal([selfjie,selfjie],mean=0.0))
+# b3 = tf.Variable(tf.zeros([selfjie]))
+# y4= tf.nn.sigmoid(tf.matmul(y3, W3)+b3)#成a * b隐藏层输出100*2
+#
+# W4 = tf.Variable(tf.random_normal([selfjie,selfjie],mean=0.0))
+# b4 = tf.Variable(tf.zeros([selfjie]))
+# y5= tf.nn.sigmoid(tf.matmul(y4, W4)+b4)#成a * b隐藏层输出100*2
+# W5 = tf.Variable(tf.random_normal([selfjie,selfjie],mean=0.0))
+# b5 = tf.Variable(tf.zeros([selfjie]))
+# y6= tf.nn.sigmoid(tf.matmul(y5, W5)+b5)#成a * b隐藏层输出100*2
+#
+# W6 = tf.Variable(tf.random_normal([selfjie,selfjie],mean=0.0))
+# b6 = tf.Variable(tf.zeros([selfjie]))
+# y7= tf.nn.sigmoid(tf.matmul(y6, W6)+b6)#成a * b隐藏层输出100*2
+# W7 = tf.Variable(tf.random_normal([selfjie,selfjie],mean=0.0))
+# b7 = tf.Variable(tf.zeros([selfjie]))
+# y8= tf.nn.sigmoid(tf.matmul(y7, W7)+b7)#成a * b隐藏层输出100*2
+
+W2 = tf.Variable(tf.random_normal([selfjie, 1],mean=0.0))#最后的输出层
+b2= tf.Variable(tf.zeros([1]))
+y = tf.matmul(y2, W2)#输出层的输出100*1
+############对xy求导
+
+gradients_dx1 = tf.gradients(y, x1_1)
+gradients_dx2 = tf.gradients(gradients_dx1, x1_1)
+gradients_dy1 = tf.gradients(y, x2_1)
+gradients_dy2 = tf.gradients(gradients_dy1, x2_1)
+
+
+##########################三层###########* tf.to_float(x, name='ToFloat')
+gradients_dx1tf=tf.to_float(gradients_dx1, name='ToFloat')
+gradients_dy1tf=tf.to_float(gradients_dy1, name='ToFloat')
+gradients_dx2=tf.to_float(gradients_dx2, name='ToFloat')
+gradients_dy2=tf.to_float(gradients_dy2, name='ToFloat')
+
+lq1_5tf=xishu_k*(x1)*(x1-1)*(1-2*(x2-0.5))
+lq1_6tf = xishu_k * (x2 - 0.5) * (x2- 1 - 0.5) * (1 - 2 *(x1))
+# t_loss =(-(dif2+dif2_2)+lq1_6*dif12_2+lq1_5*dif12-lq1andy)**2#3层损失函数第一个大项dif12
+t_loss =(-(gradients_dx2+gradients_dy2)+lq1_5tf*gradients_dx1tf+lq1_6tf*gradients_dy1tf-lq1andy)**2#3层损失函数第一个大项dif12
+
+#y_trail = (np.exp((x_train+1)/a)-1)/(np.exp(1/a)-1)+np.sin(math.pi*(x_train+1))#真实值的函数
+for i in range(grid1):    #边界条件1（0，y）
+    lq2[i] =np.exp(-a*(x_train_3[i]-1+1)**2-(-1+1)**2)
+for i in range(grid1):    #边界条件2(1,y)
+    lq3[i] =-2 * (0 + 1) * np.exp(-a * (x_train_3[i] - 1 + 1) ** 2 - (0 + 1) ** 2)
+    lq3[i] =np.exp(-a*(x_train_3[i]-1+1)**2-(0+1)**2)###线性映射
+for i in range(grid1):    #边界条件2(x,0)
+    lq4[i] =np.exp(-a*(-1-1+1)**2-(x_train_2[i*grid1+i]+1)**2)###线性映射
+for i in range(grid1):    #边界条件4(x,1)
+    lq5[i]= np.exp(-a*(0-1+1)**2-(x_train_2[i*grid1+i]+1)**2)###线性映射
+
+loss_21=tf.zeros([1,1])
+loss_22=tf.zeros([1,1])
+loss_23=tf.zeros([1,1])
+loss_24=tf.zeros([1,1])
+
+
+for i in range(grid1):
+    loss_21=loss_21+ (y[i*grid1+grid1-1]-lq5[i])**2
+    loss_22= loss_22+(y[i*grid1]-lq4[i])**2
+    loss_23= loss_23+(y[grid1*(grid1-1)+i]-lq3[i])**2
+    loss_24= loss_24+(y[i]-lq2[i])**2
+
+loss = tf.reduce_mean(t_loss)+(500/(4*grid1))*(loss_21+loss_22+loss_23+loss_24)#ÿ  Fƽ    ͺ ȡƽ   ټ  ϱ߽     00
+train_step = tf.compat.v1.train.AdamOptimizer(1e-4).minimize(loss)#Ada优化器
+init = tf.compat.v1.global_variables_initializer()#是觉得要初始化变量，有tf.Variable、tf.get_Variable的环境下
+sess = tf.compat.v1.InteractiveSession()#在启动session之前构建整个计算图，然后启动该计算图。
+sess.run(init)
+loss_process=[]
+print('次数1', x1_tr1)
+print('次数1', x2_tr2)
+print('次数1', x_trtest)
+
+for i in range(80000):#ѵ  50000
+    sess.run(train_step,feed_dict={x1:x1_tr1, x2: x2_tr2})#feed_dict={x1: x_t}字典数据x_t就是0-2等差取值
+    loss_processww = sess.run(loss, feed_dict={x1:x1_tr1, x2: x2_tr2})
+    loss_process.append(loss_processww)
+    if i%100 == 0:
+        total_loss = sess.run(loss,feed_dict={x1:x1_tr1, x2: x2_tr2})
+        total_loss1=sess.run(tf.reduce_mean(loss_22),feed_dict={x1:x1_tr1, x2: x2_tr2})
+        total_loss111=sess.run(t_loss,feed_dict={x1:x1_tr1, x2: x2_tr2})
+        print('范数', i)
+
+
+savesteploss=np.zeros((len(loss_process),1))
+for i in range(len(loss_process)):
+    savesteploss[i][0]=loss_process[i]
+saver = tf.train.Saver(max_to_keep=1)#    ģ ͣ ѵ  һ κ   Խ ѵ      ע ͵
+saver.save(sess,'ckpt/nn.ckpt',global_step=40000)#保存训练好的模型1参会话名字2参3参保存路径训练的次数作为后缀加入到模型名字中
+saver = tf.train.Saver(max_to_keep=1)
+model_file="ckpt/nn.ckpt-40000"
+saver.restore(sess, model_file)
+
+
+output = sess.run(y,feed_dict={x1:x1_tr1, x2: x2_tr2})#神经网络输出值  feed_dict={x1: x_tr[:,0], x2: x_tr[:,1]}
+outputtest = sess.run(y,feed_dict={x1:x1_trtest, x2: x2_trtest})#神经网络输出值 x_trtest
+
+output_W2 = sess.run(W1,feed_dict={x1:x1_tr1, x2: x2_tr2})#10*2
+output_W3 = sess.run(W2,feed_dict={x1:x1_tr1, x2: x2_tr2})#2*1
+W_OUT1=[]
+W_OUT2=[]
+W_OUT3=[]
+
+for i in range(10):
+    for j in range(2):
+        W_OUT2.append(output_W2[i][j])
+for i in range(2):
+    for j in range(1):
+        W_OUT3.append(output_W3[i][j])
+
+
+y_output = x_train.copy()
+print('次数t_loss',output.shape)
+print('次数t_loss',outputtest.shape)
+output=np.array(output)
+
+
+for i in range(len(x_train)):
+    y_output[i] = output[i][0]#神经网络输出值
+
+for i in range(50):
+    x_train50_2[i]=x_train_2[2*i]
+    x_train50_3[i]=x_train_3[2*i]
+
+#RT=pd.DataFrame(y_output)#C:\Users\Administrator\Desktop\国际会议\二维自适应网格\数剧保存\第一个二维对流扩散
+#RT.to_csv('C:/Users/Administrator/Desktop/国际会议/数剧保存/第一个二维对流扩散.csv')
+fig1 = plt.figure("3预测曲线（橘红色）和实际曲线（蓝色）")  # 两条曲线进行对照
+plt.plot(x_train, y_trail,markersize=4,marker='<',label='Real')  # 曲线1 真实值输出
+plt.plot(x_train, y_output,markersize=3,label='Predict')  # 真实值输出——神经网络输出值
+p1=plt.scatter(x_train,y_trail,marker='o',color='red',label='Real散点',s=15)###y_test1  miny2test
+p2=plt.scatter(x_train,y_output,marker='o',color='green',label='Predict散点',s=12)###y_test1  miny2test
+plt.title(label='训练和实际模型')
+plt.xlabel(xlabel='Time')
+plt.ylabel(ylabel='Api_access_num')
+plt.legend()
+# 图1
+
+fig5 = plt.figure("Analytic",figsize=(12, 8))
+ax = Axes3D(fig5)
+# 生成代表X轴数据的列表
+x =np.linspace(0,1,gridtestnum,endpoint=True)
+# 生成代表Y轴数据的列表
+y = np.linspace(0,1,gridtestnum,endpoint=True)
+# 对x、y数据执行网格化
+X, Y = np.meshgrid(x, y)
+Z1 = (np.exp(p*Y)-np.exp(-p*Y))*np.sin(p*X)/(np.exp(p)-np.exp(-p))##真实值的函数
+Z4=np.zeros((gridtestnum,gridtestnum))
+for i in range(gridtestnum):
+    for j in range(gridtestnum):
+        Z4[i][j]=y_trailtest[i*gridtestnum+j]
+#Z=Z1
+Z=np.transpose(Z4)
+
+surf = ax.plot_surface(X, Y, Z, rstride=rstridenum,  # rstride（row）指定行的跨度
+cstride=cstridenum,  # cstride(column)指定列的跨度
+ cmap=plt.get_cmap('rainbow'))  # 设置颜色映射
+# 设置Z轴范围
+ax.set_zlim(0, 1)
+# 设置标题
+plt.title("NN Solution",fontsize='xx-large')
+#plt.title("NN Solution",fontsize='xx-large')
+##########################1层###########rstridenum=4
+
+fig6 = plt.figure("Present NN",figsize=(12, 8))
+ax = Axes3D(fig6)
+# 生成代表X轴数据的列表
+x =np.linspace(0,1,gridtestnum,endpoint=True)
+# 生成代表Y轴数据的列表
+y = np.linspace(0,1,gridtestnum,endpoint=True)
+# 对x、y数据执行网格化
+X, Y = np.meshgrid(x, y)
+Z1 = (np.exp(p*Y)-np.exp(-p*Y))*np.sin(p*X)/(np.exp(p)-np.exp(-p))##真实值的函数
+Z4=np.zeros((gridtestnum,gridtestnum))
+for i in range(gridtestnum):
+    for j in range(gridtestnum):
+        Z4[i][j]=outputtest[i*gridtestnum+j]
+#Z=Z1
+Z=np.transpose(Z4)
+
+surf = ax.plot_surface(X, Y, Z, rstride=rstridenum,  # rstride（row）指定行的跨度
+cstride=cstridenum,  # cstride(column)指定列的跨度
+ cmap=plt.get_cmap('rainbow'))  # 设置颜色映射
+# 设置Z轴范围
+ax.set_zlim(0, 1)
+# 设置标题
+plt.title("NN Solution",fontsize='xx-large')
+#plt.title("NN Solution",fontsize='xx-large')
+fig7= plt.figure('Absolute error',figsize=(10, 10))
+x =np.linspace(0,1,gridtestnum,endpoint=True)
+y = np.linspace(0,1,gridtestnum,endpoint=True)
+X, Y = np.meshgrid(x, y)
+Z1 = (np.exp(p*Y)-np.exp(-p*Y))*np.sin(p*X)/(np.exp(p)-np.exp(-p))##真实值的函数
+Z5=np.zeros((gridtestnum,gridtestnum))
+for i in range(gridtestnum):
+    for j in range(gridtestnum):
+        Z5[i][j]=(y_trailtest[i*gridtestnum+j]-outputtest[i*gridtestnum+j])
+#Z=Z1
+Z=np.transpose(Z5)
+plt.contourf(X, Y, Z,200, cmap=plt.cm.hsv)# 设置标题LT
+# 设置标题
+
+plt.title('Absolute error',fontdict={'family':'Times New Roman','size': 25}) #改变图标题字体
+plt.tick_params(labelsize=15) #刻度字体大小13
+plt.colorbar()
+###
+
+# ###########################图2C:\Users\Administrator\Desktop\国际会议\图片保存\第三个
+pingjun=np.mean(abs(y_trail-y_output))
+print('平均精度',pingjun)
+print('平均精度',len(outputtest))
+sum=0
+for i in range(len(y_trailtest)):
+    sum=sum+abs(outputtest[i][0]-y_trailtest[i])
+pingjun=sum/(len(outputtest))
+
+print('平均精度',pingjun)
+
+
+plt.show()

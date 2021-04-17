@@ -1,0 +1,273 @@
+#--------------------------------------------------
+# һ�׳�΢�ַ��̣����е�����ױ߽�����
+#
+# �õ��������������ģ��
+#
+#--------------------------------------------------
+
+import tensorflow.compat.v1 as tf
+tf.disable_v2_behavior()
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import math
+grid=20
+gridtest=150
+
+a=0.005
+p=math.pi
+selfjie=40
+
+chu1=-1
+chu2=0
+'''#chu1_1=0#真实值的函数
+#chu1_2=1#真实值的函数'''
+chu1_1=np.exp((1+a)*(chu1+1-1)/a)+ np.exp(-chu1-1)#真实值的函数
+chu1_2=np.exp((1+a)*(chu2+1-1)/a)+ np.exp(-chu2-1)#真实值的函数
+
+x_train = np.linspace(-1,0,grid,endpoint=True)#����[0,2]����100����
+x_t = np.zeros((len(x_train),1))#产生100*1的矩阵
+lq1 = np.zeros((len(x_train),1))#产生100*1的矩阵
+
+
+def feijungrid(grid1):
+    N = grid1
+    t =0.9
+    print('ef')
+    xit_train = np.linspace(0.01, 0.02, grid1, endpoint=True)  #     [0,2]    100
+    for i in range(len(xit_train)):
+        xit_train[i] = 0
+    xi_train = np.linspace(0, grid1, grid1, endpoint=True)  #     [0,2]    100
+    #wangge = xi_train / N + (t*np.sin(2*p * xi_train / N) ) / (2*p)#N子区间个数，t伸缩变换系数调剂某一个区域密集程度
+    wangge = xi_train / N + (t*np.sin(p * xi_train / N) ) / p  ##N子区间个数，t伸缩变换系数调剂某一个区域密集程度
+    return wangge
+nogrid=feijungrid(grid)
+for i in range(len(x_train)):
+    x_train[i] = nogrid[i]-1
+    x_t[i] =nogrid[i]
+y_trail = np.exp((1+a)*((x_train+1)-1)/a)+ np.exp(-(x_train+1))#真实值的函数
+
+y_traild1= (1/a+1)*np.exp((1+a)*((x_train+1)-1)/a)- np.exp(-(x_train+1))
+y_traild2=(1/a+1)*(1/a+1)*np.exp((1+a)*((x_train+1)-1)/a)+ np.exp(-(x_train+1))
+
+
+x_test =np.linspace(-1,0,gridtest,endpoint=True) # Training dataset.
+x_test=np.sort(x_test)
+xtest_t = np.zeros((len(x_test),1))#产生100*1的矩阵
+#y_test = (np.exp((x_test+1)/a)-1)/(np.exp(1/a)-1)+np.sin(math.pi*(x_test+1))#真实值的函数
+x_test=x_test+1
+y_test = np.exp((1+a)*((x_test)-1)/a)+ np.exp(-(x_test))#真实值的函数
+
+y_testd1= (1/a+1)*np.exp((1+a)*((x_test)-1)/a)- np.exp(-(x_test))
+y_testd2=(1/a+1)*(1/a+1)*np.exp((1+a)*((x_test)-1)/a)+ np.exp(-(x_test))
+
+for i in range(len(x_test)):
+    xtest_t[i] = x_test[i]
+
+###########################sin
+
+x1 = tf.placeholder("float", [None, 1])  # һ�δ���100����[100,1]
+x1_1 = x1-1
+
+W = 50 * tf.Variable(tf.random_normal([1, selfjie], mean=0.0))
+b = tf.Variable(tf.zeros([selfjie]))
+y1 = tf.nn.sigmoid(tf.matmul(x1_1, W) + b)  # 成a * b隐藏层输出100*10
+
+W1 = tf.Variable(tf.random_normal([selfjie, selfjie], mean=0.0))
+b1 = tf.Variable(tf.zeros([selfjie]))
+y2 = tf.nn.sigmoid(tf.matmul(y1, W1) + b1)  # 成a * b隐藏层输出100*2
+
+# W2 = tf.Variable(tf.random_normal([selfjie, selfjie], mean=0.0))  # 最后的输出层
+# b2 = tf.Variable(tf.zeros([selfjie]))
+# y3 = tf.nn.sigmoid(tf.matmul(y2, W2) + b2)  # 成a * b隐藏层输出100*2
+# W3 = tf.Variable(tf.random_normal([selfjie, selfjie], mean=0.0))  # 最后的输出层
+# b3 = tf.Variable(tf.zeros([selfjie]))
+# y4 = tf.nn.sigmoid(tf.matmul(y3, W3) + b3)  # 成a * b隐藏层输出100*2
+#
+# W4 = tf.Variable(tf.random_normal([selfjie, selfjie], mean=0.0))  # 最后的输出层
+# b4 = tf.Variable(tf.zeros([selfjie]))
+# y5 = tf.nn.sigmoid(tf.matmul(y4, W4) + b4)  # 成a * b隐藏层输出100*2
+# W5= tf.Variable(tf.random_normal([selfjie, selfjie], mean=0.0))  # 最后的输出层
+# b5 = tf.Variable(tf.zeros([selfjie]))
+# y6 = tf.nn.sigmoid(tf.matmul(y5, W5) + b5)  # 成a * b隐藏层输出100*2
+#
+# W6 = tf.Variable(tf.random_normal([selfjie, selfjie], mean=0.0))  # 最后的输出层
+# b6 = tf.Variable(tf.zeros([selfjie]))
+# y7= tf.nn.sigmoid(tf.matmul(y6, W6) + b6)  # 成a * b隐藏层输出100*2
+# W7= tf.Variable(tf.random_normal([selfjie, selfjie], mean=0.0))  # 最后的输出层
+# b7 = tf.Variable(tf.zeros([selfjie]))
+# y8 = tf.nn.sigmoid(tf.matmul(y7, W7) + b7)  # 成a * b隐藏层输出100*2
+
+W2= tf.Variable(tf.random_normal([selfjie, 1], mean=0.0))  # 最后的输出层
+b2 = tf.Variable(tf.zeros([1]))
+y = tf.matmul(y2, W2)  # 输出层的输出100*1
+
+gradients_d1 = tf.gradients(y, x1_1)
+gradients_d2 = tf.gradients(gradients_d1, x1_1)
+
+
+
+dif11 = tf.matmul(tf.multiply(y1*(1-y1),W),W1)#损失函数第一个大项的 第一个式子目标函数一阶导数
+dif12 = tf.matmul(tf.multiply(y2*(1-y2),dif11),W2)#函数一阶导
+dif21=tf.matmul(tf.multiply(y2*(1-y2)*(1-2*y2),dif11*dif11),W2)#二阶段导第一项
+dif221=tf.matmul(tf.multiply(y1*(1-y1)*(1-2*y1),W*W),W1)#
+dif22=tf.matmul(tf.multiply(y2*(1-y2),dif221),W2)#二阶段导第二项
+dif2=dif21+dif22
+
+#lq =0.2*np.exp(-0.2*x1)*np.cos(x1)#原函数的第四项
+for i in range(len(x_train)):
+    lq1[i]=a*p*p*np.sin(p*(x_train[i]+1))+p*np.cos(p*(x_train[i]+1))
+#t_loss =(-a*dif2+dif12-lq1)**2#损失函数第一个大项
+# t_loss = (-a * dif2+dif12+(1+a)*y) ** 2  # 损失函数第一个大项
+a=tf.constant(a)
+
+t_loss =(-a*gradients_d2+gradients_d1+(1+a)*y)**2#损失函数第一个大项
+
+t_loss1=tf.reduce_mean(t_loss)
+
+#loss = tf.reduce_mean(t_loss)+0.5*((y[0]-0)**2)+0.5*((y[grid-1]-1)**2)#ÿ��Fƽ����ͺ�ȡƽ���ټ��ϱ߽�����
+loss = tf.reduce_mean(t_loss)+200*((y[0]-chu1_1)**2+(y[grid-1]-chu1_2)**2)#ÿ��Fƽ����ͺ�ȡƽ���ټ��ϱ߽�����
+
+train_step = tf.compat.v1.train.AdamOptimizer(1e-4).minimize(loss)#Ada优化器
+init = tf.compat.v1.global_variables_initializer()#是觉得要初始化变量，有tf.Variable、tf.get_Variable的环境下
+sess = tf.compat.v1.InteractiveSession()#在启动session之前构建整个计算图，然后启动该计算图。
+sess.run(init)
+
+loss_process=[]
+for i in range(80000):#ѵ��50000��
+    sess.run(train_step,feed_dict={x1: x_t})#feed_dict={x1: x_t}字典数据x_t就是0-2等差取值
+    total_lossprocess = sess.run(loss, feed_dict={x1: x_t})
+    loss_process.append(total_lossprocess)
+    if i%100 == 0:
+        total_loss = sess.run(loss,feed_dict={x1: x_t})
+        total_loss1 = sess.run(t_loss1,feed_dict={x1: x_t})
+        print(i)
+saver = tf.train.Saver(max_to_keep=1)#����ģ�ͣ�ѵ��һ�κ���Խ�ѵ������ע�͵�
+saver.save(sess,'ckpt/nn.ckpt',global_step=40000)#保存训练好的模型1参会话名字2参3参保存路径训练的次数作为后缀加入到模型名字中
+saver = tf.train.Saver(max_to_keep=1)
+model_file="ckpt/nn.ckpt-40000"
+saver.restore(sess, model_file)
+
+
+output = sess.run(y,feed_dict={x1:x_t})#神经网络输出值
+output1 = sess.run(t_loss,feed_dict={x1:x_t})#损失函数第一项输出值
+y_output = x_train.copy()
+y_output1 = x_train.copy()
+y_outputd1= x_train.copy()
+y_outputd2= x_train.copy()
+y_outputd1test= x_test.copy()
+y_outputd2test= x_test.copy()
+y_outputest= x_test.copy()
+
+outputd1 = sess.run(gradients_d1,feed_dict={x1:x_t})#神经网络输出值
+outputd2= sess.run(gradients_d2,feed_dict={x1:x_t})#损失函数第一项输出值
+outputd1test = sess.run(gradients_d1,feed_dict={x1:xtest_t})#神经网络输出值
+outputd2test= sess.run(gradients_d2,feed_dict={x1:xtest_t})#损失函数第一项输出值
+
+outputtest= sess.run(y,feed_dict={x1:xtest_t})#损失函数第一项输出值
+
+outputd1_array=np.array(outputd1)
+outputd2=np.array(outputd2)
+outputd1test=np.array(outputd1test)
+outputd2test=np.array(outputd2test)
+
+
+outputd1test_array = outputd1test.reshape(gridtest,1)
+outputd2test_array = outputd2test.reshape(gridtest,1)
+print('输出导数2',outputd1test)
+print('输出导数2',outputd2test)
+
+for i in range(len(x_train)):
+    y_output[i] = output[i]#神经网络输出值
+    y_output1[i] = output1[0][i][0]#损失函数第一项输出值   编写有问题
+    y_outputd1[i] = outputd1[0][i][0]#神经网络输出值
+    y_outputd2[i] = outputd2[0][i][0]#损失函数第一项输出值   编写有问题
+
+for i in range(len(x_test)):
+    y_outputd1test[i] = outputd1test[0][i][0] # 神经网络输出值
+    y_outputd2test[i] = outputd2test[0][i][0]  # 损失函数第一项输出值   编写有问题
+    y_outputest[i] = outputtest[i]#损失函数第一项输出值   编写有问题
+# 图1
+print('len(x_train)',len(x_train))
+print('len(x_train)',len(y_trail))
+print('len(x_train)',len(y_output))
+
+# 图1
+fig= plt.figure("训练集和")  # 两条曲线进行对照
+ln1, = plt.plot(x_train+1, y_trail,linestyle=':',color='green',markersize=6,marker="x")
+ln2, = plt.plot(x_train+1, y_output,linestyle=':',color='red',markersize=1,marker="o")
+# 调用legend函数设置图例
+plt.legend(handles=[ln1, ln2], labels=['Analytic Solution', 'NN Solution'],loc='upper left')
+leg = plt.gca().get_legend()
+ltext = leg.get_texts()
+plt.setp(ltext, fontsize='xx-large')
+# 调用show()函数显示图形
+
+
+# 图3 误差曲线
+plt.figure(figsize=(8,12))
+plt.plot(xtest_t, y_outputest-y_test,linewidth=2,color='green',markersize=6,label='Analytic')
+font1 = {'family' : 'Times New Roman','size'   : 30}
+plt.legend(['Absolute error'],prop=font1,frameon=False)
+#plt.legend(['Analytic','NN'],loc = 'best',fontsize=30,ncol=2)
+plt.xticks(fontsize=18)
+plt.yticks(fontsize=18)
+
+# 图4 误差曲线一阶导
+plt.figure(figsize=(8,12))
+plt.plot(xtest_t, y_testd1,linewidth=2,color='green',markersize=6,label='Analytic')
+p1=plt.scatter(xtest_t,outputd1test_array,marker='o',color='r',label='NN',s=20)
+font1 = {'family' : 'Times New Roman','size'   : 30}
+plt.legend(['Analytic  First Derivate','NN  First Derivate'],prop=font1,frameon=False)
+#plt.legend(['Analytic','NN'],loc = 'best',fontsize=30,ncol=2)
+xtest_t = np.zeros((len(x_test),1))#产生100*1的矩阵
+
+plt.xticks(fontsize=22)
+plt.yticks(fontsize=22)
+
+
+plt.figure(figsize=(8,12))
+plt.plot(x_test, y_testd2,linewidth=2,color='green',markersize=6,label='Analytic')
+p1=plt.scatter(x_test,outputd2test_array,marker='o',color='r',label='NN',s=20)
+font1 = {'family' : 'Times New Roman','size'   : 30}
+plt.legend(['Analytic  Second Derivate','NN  Second Derivate'],prop=font1,frameon=False)
+#plt.legend(['Analytic','NN'],loc = 'best',fontsize=30,ncol=2)
+plt.xticks(fontsize=22)
+plt.yticks(fontsize=22)
+print('dashhape',y_testd1)
+print('dashhape',outputd1test_array)
+
+
+pingjun=np.mean(abs(y_trail-y_output))
+print('平均精度',pingjun)
+
+plt.figure(figsize=(8,12))
+plt.plot(x_test, y_test,linewidth=2,color='green',markersize=6,label='Analytic')
+p1=plt.scatter(x_test,y_outputest,marker='o',color='r',label='NN',s=20)
+#plt.legend(loc = 'higher right',fontsize=15)
+font1 = {'family' : 'Times New Roman','size'   : 30}
+plt.legend(['Analytic','Present NN'],prop=font1,ncol=1,frameon=False)
+plt.xticks(fontsize=22)
+plt.yticks(fontsize=22)
+print('平均精度',pingjun)
+print('平均精度',pingjun)
+
+
+# RT=pd.DataFrame(x_test)#C:\Users\Administrator\Desktop\国际会议\图片保存\第一个
+# RT.to_csv('C:/Users/Administrator/Desktop/国际会议/图片保存/第一个/100p1-NNx.csv')
+# RT=pd.DataFrame(y_outputest)#C:\Users\Administrator\Desktop\国际会议\图片保存\第一个
+# RT.to_csv('C:/Users/Administrator/Desktop/国际会议/图片保存/第一个/100p1-NN2.csv')
+# RT=pd.DataFrame(y_outputd1test)#C:\Users\Administrator\Desktop\国际会议\图片保存\第一个
+# RT.to_csv('C:/Users/Administrator/Desktop/国际会议/图片保存/第一个/100p1-d1.csv')
+# RT=pd.DataFrame(y_outputd2test)#C:\Users\Administrator\Desktop\国际会议\图片保存\第一个
+# RT.to_csv('C:/Users/Administrator/Desktop/国际会议/图片保存/第一个/100p1-d2.csv')
+# RT=pd.DataFrame(loss_process)#C:\Users\Administrator\Desktop\国际会议\图片保存\第一个
+# RT.to_csv('C:/Users/Administrator/Desktop/国际会议/图片保存/第一个/100p1-loss.csv')
+pingjun=np.mean(abs(y_test-y_outputest))
+print('平均精度',pingjun)
+sum=0
+for i in range(len(y_test)):
+    sum=sum+abs(y_test[i]-y_outputest[i])
+pingjun=sum/(len(y_outputest))
+print('平均精度',pingjun)
+plt.show()

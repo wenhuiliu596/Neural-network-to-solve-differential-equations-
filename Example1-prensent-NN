@@ -32,7 +32,7 @@ lq1 = np.zeros((len(x_train),1))#产生100*1的矩阵
 
 def feijungrid(grid1):
     N = grid1
-    t =0.9
+    t =0.97
     print('ef')
     xit_train = np.linspace(0.01, 0.02, grid1, endpoint=True)  #     [0,2]    100
     for i in range(len(xit_train)):
